@@ -1,5 +1,6 @@
 package com.bustanil.jurnal.sales;
 
+import com.bustanil.jurnal.sales.domain.SaleItem;
 import org.junit.Test;
 
 import java.math.BigDecimal;

@@ -1,11 +1,14 @@
-package com.bustanil.jurnal.sales;
+package com.bustanil.jurnal.sales.domain;
 
+import com.bustanil.jurnal.AuditedEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,10 +17,12 @@ import java.util.Collection;
 @RequiredArgsConstructor(staticName = "create")
 @Entity
 @Data
-public class Sale {
+@EqualsAndHashCode(callSuper = true)
+public class Sale extends AuditedEntity {
 
     @Id
     private final String id;
+    @OneToMany
     private Collection<SaleItem> items;
 
     public BigDecimal getTotal() {
