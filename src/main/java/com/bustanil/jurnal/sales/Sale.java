@@ -1,18 +1,24 @@
 package com.bustanil.jurnal.sales;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
+@NoArgsConstructor(force = true)
+@RequiredArgsConstructor(staticName = "create")
+@Entity
 @Data
 public class Sale {
 
-    private LocalDateTime createdDate;
-    private List<SaleItem> items;
-    private String createdBy;
+    @Id
+    private final String id;
+    private Collection<SaleItem> items;
 
     public BigDecimal getTotal() {
         return items.stream()
