@@ -35,7 +35,7 @@ public class SaleView extends VerticalLayout implements View {
         Binder<SaleItem> binder = editor.getBinder();
         Binder.Binding<SaleItem, String> productCode1 = binder.bind(productCodeField, SaleItem::getProductCode, SaleItem::setProductCode);
         editor.setEnabled(true);
-        editor.setBuffered(false);
+        editor.setBuffered(true);
         Grid.Column<SaleItem, String> productCode = (Grid.Column<SaleItem, String>) saleItemGrid.getColumn("productCode");
         productCode.setEditorBinding(productCode1);
 
