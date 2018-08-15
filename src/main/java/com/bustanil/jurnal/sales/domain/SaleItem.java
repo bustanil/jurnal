@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.math.BigDecimal;
+import java.util.UUID;
 
-@NoArgsConstructor(force = true)
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
@@ -23,6 +23,10 @@ public class SaleItem {
     private String productName;
     private Integer quantity = 0;
     private BigDecimal price = BigDecimal.ZERO;
+
+    public SaleItem(){
+        this.id = UUID.randomUUID().toString();
+    }
 
     public BigDecimal getSubTotal() {
         return price.multiply(BigDecimal.valueOf(quantity));
