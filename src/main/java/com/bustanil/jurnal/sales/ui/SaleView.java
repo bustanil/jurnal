@@ -51,17 +51,19 @@ public class SaleView extends VerticalLayout implements View {
         TextField productCodeField = new TextField();
         Editor<SaleItem> editor = saleItemGrid.getEditor();
         Binder<SaleItem> binder = editor.getBinder();
-        Binder.Binding<SaleItem, String> productCode1 = binder.bind(productCodeField, "productCode");
+        Binder.Binding<SaleItem, String> productCodeBinding = binder.bind(productCodeField, "productCode");
         editor.setEnabled(true);
         editor.setBuffered(false);
-        Grid.Column<SaleItem, String> productCode = (Grid.Column<SaleItem, String>) saleItemGrid.getColumn("productCode");
-        productCode.setEditorBinding(productCode1);
+        Grid.Column<SaleItem, String> productCodeColumn = (Grid.Column<SaleItem, String>) saleItemGrid.getColumn("productCode");
+        productCodeColumn.setEditorBinding(productCodeBinding);
 
         binder.addValueChangeListener(event -> {
             Optional<Product> maybeProduct = productService.findByCode((String) event.getValue());
             maybeProduct.ifPresent(product -> {
                 SaleItem saleItem = binder.getBean();
                 saleItem.setProductName(product.getName());
+                saleItem.setQuantity(1);
+                saleItem.setPrice(product.getPrice());
                 saleItemGrid.getDataProvider().refreshItem(saleItem);
             });
         });
