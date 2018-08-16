@@ -4,6 +4,7 @@ import com.bustanil.jurnal.product.Product;
 import com.bustanil.jurnal.product.ProductService;
 import com.bustanil.jurnal.sales.domain.SaleItem;
 import com.vaadin.data.Binder;
+import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.navigator.View;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.*;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @SpringView(name = SaleView.VIEW_NAME)
 public class SaleView extends VerticalLayout implements View {
@@ -22,9 +22,11 @@ public class SaleView extends VerticalLayout implements View {
 
     private List<SaleItem> saleItems = new ArrayList<>();
     private Grid<SaleItem> saleItemGrid;
+    private Editor<SaleItem> gridEditor;
 
     @Autowired
     ProductService productService;
+    private TextField totalTextField;
 
     public SaleView(){
         createSaleItemGrid();
@@ -48,12 +50,16 @@ public class SaleView extends VerticalLayout implements View {
         saleItemGrid.getColumn("id").setHidden(true);
         saleItemGrid.getColumn("productId").setHidden(true);
 
+        setupGridEditor();
+        makeProductCodeEditable();
+        makeQuantityEditable();
+        addComponent(saleItemGrid);
+    }
+
+    private void makeProductCodeEditable() {
         TextField productCodeField = new TextField();
-        Editor<SaleItem> editor = saleItemGrid.getEditor();
-        Binder<SaleItem> binder = editor.getBinder();
+        Binder<SaleItem> binder = gridEditor.getBinder();
         Binder.Binding<SaleItem, String> productCodeBinding = binder.bind(productCodeField, "productCode");
-        editor.setEnabled(true);
-        editor.setBuffered(false);
         Grid.Column<SaleItem, String> productCodeColumn = (Grid.Column<SaleItem, String>) saleItemGrid.getColumn("productCode");
         productCodeColumn.setEditorBinding(productCodeBinding);
 
@@ -67,7 +73,25 @@ public class SaleView extends VerticalLayout implements View {
                 saleItemGrid.getDataProvider().refreshItem(saleItem);
             });
         });
-        addComponent(saleItemGrid);
+    }
+
+    private void makeQuantityEditable() {
+        TextField quantityField = new TextField();
+        quantityField.addFocusListener(focusEvent -> quantityField.selectAll());
+        Binder<SaleItem> binder = gridEditor.getBinder();
+        Binder.Binding<SaleItem, Integer> quantityBinding =
+                binder.forField(quantityField)
+                        .asRequired("Quantity must be set")
+                        .withConverter(new StringToIntegerConverter("Must input integer!"))
+                        .bind("quantity");
+        Grid.Column<SaleItem, String> quantityColumn = (Grid.Column<SaleItem, String>) saleItemGrid.getColumn("quantity");
+        quantityColumn.setEditorBinding(quantityBinding);
+    }
+
+    private void setupGridEditor() {
+        gridEditor = saleItemGrid.getEditor();
+        gridEditor.setEnabled(true);
+        gridEditor.setBuffered(false);
     }
 
     private void createBottomSection() {
@@ -76,7 +100,9 @@ public class SaleView extends VerticalLayout implements View {
         VerticalLayout paymentPart = new VerticalLayout();
         HorizontalLayout totalField = new HorizontalLayout();
         totalField.addComponent(new Label("Total"));
-        totalField.addComponent(new TextField());
+        totalTextField = new TextField();
+        totalTextField.setReadOnly(true);
+        totalField.addComponent(totalTextField);
         paymentPart.addComponent(totalField);
         HorizontalLayout paymentField = new HorizontalLayout();
         paymentField.addComponent(new Label("Payment"));
