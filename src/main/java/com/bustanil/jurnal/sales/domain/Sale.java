@@ -23,7 +23,7 @@ public class Sale extends AuditedEntity {
     @Id
     private final String id;
     @OneToMany
-    private Collection<SaleItem> items;
+    private Collection<SaleItem> items = new ArrayList<>();
 
     public BigDecimal getTotal() {
         return items.stream()
