@@ -32,4 +32,7 @@ public class SaleItem {
         return price.multiply(BigDecimal.valueOf(quantity));
     }
 
+    public void addQuantity(Integer quantity) {
+        setQuantity(getQuantity() + quantity);
+    }
 }

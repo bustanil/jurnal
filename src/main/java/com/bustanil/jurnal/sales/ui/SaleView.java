@@ -7,10 +7,14 @@ import com.bustanil.jurnal.sales.domain.SaleItem;
 import com.vaadin.data.Binder;
 import com.vaadin.data.converter.StringToBigDecimalConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
+import com.vaadin.event.ShortcutAction;
+import com.vaadin.event.ShortcutListener;
 import com.vaadin.navigator.View;
+import com.vaadin.server.UserError;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.*;
 import com.vaadin.ui.components.grid.Editor;
+import com.vaadin.ui.renderers.ButtonRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -31,18 +35,36 @@ public class SaleView extends VerticalLayout implements View {
 
     public SaleView(){
         sale = new Sale();
-        createSaleItemGrid();
-        Button addItemButton = new Button("Add Item");
-        addItemButton.addClickListener(event -> {
-            sale.addItems(new SaleItem());
-            saleItemGrid.getDataProvider().refreshAll();
+        TextField quickAddProduct = new TextField();
+        quickAddProduct.addShortcutListener(new ShortcutListener("Quick Add", ShortcutAction.KeyCode.ENTER, null) {
+            @Override
+            public void handleAction(Object o, Object o1) {
+                quickAddProduct.setComponentError(null);
+                String productCode = quickAddProduct.getValue();
+                Optional<Product> maybeProduct = productService.findByCode(productCode);
+                if (maybeProduct.isPresent()) {
+                    SaleItem saleItem = new SaleItem();
+                    Product product = maybeProduct.get();
+                    saleItem.setProductCode(productCode);
+                    saleItem.setProductName(product.getName());
+                    saleItem.setPrice(product.getPrice());
+                    saleItem.setQuantity(1);
+                    sale.addItems(saleItem);
+                    saleItemGrid.getDataProvider().refreshAll();
+                    quickAddProduct.clear();
+                    saleBinder.readBean(sale);
+                } else {
+                    quickAddProduct.setComponentError(new UserError("Invalid product code"));
+                }
+            }
         });
-        addComponent(addItemButton);
+        addComponent(quickAddProduct);
+        createSaleItemGrid();
         createBottomSection();
     }
 
     private void newSale(){
-        sale.getItems().clear();
+        sale.reset();
         saleItemGrid.getDataProvider().refreshAll();
         saleBinder.readBean(sale);
     }
@@ -51,6 +73,12 @@ public class SaleView extends VerticalLayout implements View {
         saleItemGrid = new Grid<>(SaleItem.class);
         saleItemGrid.setItems(sale.getItems());
         saleItemGrid.setSizeFull();
+        saleItemGrid.addColumn(saleItem -> "Delete", new ButtonRenderer<>(clickEvent -> {
+            SaleItem item = clickEvent.getItem();
+            sale.remove(item);
+            saleItemGrid.getDataProvider().refreshAll();
+            saleBinder.readBean(sale);
+        }));
         saleItemGrid.setColumnOrder("productCode", "productName", "quantity", "price", "subTotal");
         saleItemGrid.getColumn("id").setHidden(true);
         saleItemGrid.getColumn("productId").setHidden(true);
@@ -59,6 +87,13 @@ public class SaleView extends VerticalLayout implements View {
         makeProductCodeEditable();
         makeQuantityEditable();
         addComponent(saleItemGrid);
+
+        Button addItemButton = new Button("Add Item");
+        addItemButton.addClickListener(event -> {
+            sale.addItems(new SaleItem());
+            saleItemGrid.getDataProvider().refreshAll();
+        });
+        addComponent(addItemButton);
     }
 
     private void makeProductCodeEditable() {
@@ -78,7 +113,12 @@ public class SaleView extends VerticalLayout implements View {
                     saleItem.setQuantity(1);
                 }
                 saleItem.setPrice(product.getPrice());
-                saleItemGrid.getDataProvider().refreshItem(saleItem);
+                if (sale.combineToExistingIfPossible(saleItem)) {
+                    sale.remove(saleItem);
+                    saleItemGrid.getDataProvider().refreshAll();
+                } else {
+                    saleItemGrid.getDataProvider().refreshItem(saleItem);
+                }
                 saleBinder.readBean(sale);
             } else {
                 saleItem.setQuantity(0);
@@ -112,9 +152,7 @@ public class SaleView extends VerticalLayout implements View {
         HorizontalLayout bottomPart = new HorizontalLayout();
         Button newSaleButton = new Button("New Sale");
         bottomPart.addComponent(newSaleButton);
-        newSaleButton.addClickListener(clickEvent -> {
-            newSale();
-        });
+        newSaleButton.addClickListener(clickEvent -> newSale());
 
 
         VerticalLayout paymentPart = new VerticalLayout();

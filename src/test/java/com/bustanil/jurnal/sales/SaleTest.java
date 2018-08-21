@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class SaleTest {
@@ -29,6 +30,27 @@ public class SaleTest {
         sale.addItems(item1, item2);
 
         assertThat(sale.getTotal(), equalTo(BigDecimal.valueOf(2_050_000)));
+
+    }
+
+    @Test
+    public void addingExistingProductCodeShouldCombine(){
+        Sale sale = new Sale();
+        SaleItem saleItem = new SaleItem();
+        saleItem.setProductCode("AA");
+        saleItem.setQuantity(10);
+        saleItem.setPrice(BigDecimal.valueOf(1_000));
+        sale.addItems(saleItem);
+
+        SaleItem saleItem2 = new SaleItem();
+        saleItem2.setProductCode("AA");
+        saleItem2.setQuantity(5);
+        saleItem2.setPrice(BigDecimal.valueOf(1_000));
+        sale.addItems(saleItem2);
+
+        assertThat(sale.getItems().size(), is(1));
+        assertThat(sale.getTotal(), is(BigDecimal.valueOf(15_000)));
+
 
     }
 }
