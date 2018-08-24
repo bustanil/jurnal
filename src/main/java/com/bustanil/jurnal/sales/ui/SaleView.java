@@ -5,12 +5,14 @@ import com.bustanil.jurnal.product.ProductService;
 import com.bustanil.jurnal.sales.domain.Sale;
 import com.bustanil.jurnal.sales.domain.SaleItem;
 import com.vaadin.data.Binder;
+import com.vaadin.data.HasValue;
 import com.vaadin.data.converter.StringToBigDecimalConverter;
 import com.vaadin.data.converter.StringToIntegerConverter;
 import com.vaadin.event.ShortcutAction;
 import com.vaadin.event.ShortcutListener;
 import com.vaadin.navigator.View;
 import com.vaadin.server.UserError;
+import com.vaadin.shared.ui.ValueChangeMode;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.ui.*;
 import com.vaadin.ui.components.grid.Editor;
@@ -35,27 +37,31 @@ public class SaleView extends VerticalLayout implements View {
 
     public SaleView(){
         sale = new Sale();
-        JnTextField quickAddProduct = new JnTextField();
-        quickAddProduct.addKeyPressedListener(charCode -> {
-            if ((int) charCode == ShortcutAction.KeyCode.ENTER) {
-                quickAddProduct.setComponentError(null);
-                                String productCode = quickAddProduct.getValue();
-                Optional<Product> maybeProduct = productService.findByCode(productCode);
-                if (maybeProduct.isPresent()) {
-                    SaleItem saleItem = new SaleItem();
-                    Product product = maybeProduct.get();
-                    saleItem.setProductCode(productCode);
-                    saleItem.setProductName(product.getName());
-                    saleItem.setPrice(product.getPrice());
-                    saleItem.setQuantity(1);
-                    sale.addItems(saleItem);
-                    saleItemGrid.getDataProvider().refreshAll();
-                    quickAddProduct.clear();
-                    saleBinder.readBean(sale);
-                } else {
-                    quickAddProduct.setComponentError(new UserError("Invalid product code"));
-                }
-            }
+        TextField quickAddProduct = new TextField();
+//        quickAddProduct.addKeyPressedListener(charCode -> {
+//            if ((int) charCode == ShortcutAction.KeyCode.ENTER) {
+//                quickAddProduct.setComponentError(null);
+//                                String productCode = quickAddProduct.getValue();
+//                Optional<Product> maybeProduct = productService.findByCode(productCode);
+//                if (maybeProduct.isPresent()) {
+//                    SaleItem saleItem = new SaleItem();
+//                    Product product = maybeProduct.get();
+//                    saleItem.setProductCode(productCode);
+//                    saleItem.setProductName(product.getName());
+//                    saleItem.setPrice(product.getPrice());
+//                    saleItem.setQuantity(1);
+//                    sale.addItems(saleItem);
+//                    saleItemGrid.getDataProvider().refreshAll();
+//                    quickAddProduct.clear();
+//                    saleBinder.readBean(sale);
+//                } else {
+//                    quickAddProduct.setComponentError(new UserError("Invalid product code"));
+//                }
+//            }
+//        });
+        quickAddProduct.setValueChangeMode(ValueChangeMode.EAGER);
+        quickAddProduct.addValueChangeListener((HasValue.ValueChangeListener<String>) event -> {
+            System.out.println((int) event.getValue().charAt(event.getValue().length() - 1));
         });
         addComponent(quickAddProduct);
         createSaleItemGrid();
