@@ -1,6 +1,7 @@
 package com.bustanil.jurnal;
 
 import com.bustanil.jurnal.sales.ui.SaleView;
+import com.vaadin.annotations.Widgetset;
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewDisplay;
 import com.vaadin.server.VaadinRequest;
@@ -13,6 +14,7 @@ import com.vaadin.ui.VerticalLayout;
 
 @SpringUI
 @SpringViewDisplay
+@Widgetset("com.bustanil.jurnal.sales.ui.WidgetSet")
 public class MainUI extends UI implements ViewDisplay {
 
     private Panel viewDisplay;

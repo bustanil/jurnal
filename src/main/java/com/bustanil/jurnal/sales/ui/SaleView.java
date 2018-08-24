@@ -35,12 +35,33 @@ public class SaleView extends VerticalLayout implements View {
 
     public SaleView(){
         sale = new Sale();
-        TextField quickAddProduct = new TextField();
-        quickAddProduct.addShortcutListener(new ShortcutListener("Quick Add", ShortcutAction.KeyCode.ENTER, null) {
-            @Override
-            public void handleAction(Object o, Object o1) {
+        JnTextField quickAddProduct = new JnTextField();
+//        quickAddProduct.addShortcutListener(new ShortcutListener("Quick Add", ShortcutAction.KeyCode.ENTER, null) {
+//            @Override
+//            public void handleAction(Object o, Object o1) {
+//                quickAddProduct.setComponentError(null);
+//                String productCode = quickAddProduct.getValue();
+//                Optional<Product> maybeProduct = productService.findByCode(productCode);
+//                if (maybeProduct.isPresent()) {
+//                    SaleItem saleItem = new SaleItem();
+//                    Product product = maybeProduct.get();
+//                    saleItem.setProductCode(productCode);
+//                    saleItem.setProductName(product.getName());
+//                    saleItem.setPrice(product.getPrice());
+//                    saleItem.setQuantity(1);
+//                    sale.addItems(saleItem);
+//                    saleItemGrid.getDataProvider().refreshAll();
+//                    quickAddProduct.clear();
+//                    saleBinder.readBean(sale);
+//                } else {
+//                    quickAddProduct.setComponentError(new UserError("Invalid product code"));
+//                }
+//            }
+//        });
+        quickAddProduct.addKeyPressedListener(charCode -> {
+            if ((int) charCode == ShortcutAction.KeyCode.ENTER) {
                 quickAddProduct.setComponentError(null);
-                String productCode = quickAddProduct.getValue();
+                                String productCode = quickAddProduct.getValue();
                 Optional<Product> maybeProduct = productService.findByCode(productCode);
                 if (maybeProduct.isPresent()) {
                     SaleItem saleItem = new SaleItem();
