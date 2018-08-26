@@ -2,20 +2,14 @@ package com.bustanil.jurnal.sales.domain;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@Entity
 public class SaleItem {
 
-    @Id
     @EqualsAndHashCode.Include
     private String id;
     private String productCode;

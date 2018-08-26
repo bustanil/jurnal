@@ -6,24 +6,19 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 @NoArgsConstructor(force = true)
 @RequiredArgsConstructor(staticName = "create")
-@Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Sale extends AuditedEntity {
 
-    @Id
     private final String id;
-    @OneToMany
-    private Collection<SaleItem> items = new ArrayList<>();
+    private Collection<SaleItem> items = new HashSet<>();
 
     public BigDecimal getTotal() {
         return items.stream()

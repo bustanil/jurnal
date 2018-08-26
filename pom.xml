@@ -23,13 +23,15 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 		<vaadin.version>8.3.0</vaadin.version>
+		<org.jooq.version>3.9.6</org.jooq.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<artifactId>spring-boot-starter-jooq</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring-boot-starter</artifactId>
@@ -114,6 +116,75 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<version>3.0</version>
+
+				<!-- Note that we're executing the Flyway plugin in the "generate-sources" phase -->
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>migrate</goal>
+						</goals>
+					</execution>
+
+				</executions>
+
+				<!-- Note that we need to prefix the db/migration path with filesystem: to prevent Flyway
+                     from looking for our migration scripts only on the classpath -->
+				<configuration>
+					<url>jdbc:postgresql://localhost:5433/jurnal</url>
+					<user>postgres</user>
+					<password>postgres</password>
+					<locations>
+						<location>filesystem:src/main/resources/db/migration</location>
+					</locations>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<!-- Use org.jooq            for the Open Source Edition
+                         org.jooq.pro        for commercial editions,
+                         org.jooq.pro-java-6 for commercial editions with Java 6 support,
+                         org.jooq.trial      for the free trial edition
+
+                     Note: Only the Open Source Edition is hosted on Maven Central.
+                           Import the others manually from your distribution -->
+				<groupId>org.jooq</groupId>
+				<artifactId>jooq-codegen-maven</artifactId>
+				<version>${org.jooq.version}</version>
+
+				<!-- The jOOQ code generation plugin is also executed in the generate-sources phase, prior to compilation -->
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+
+				<!-- This is a minimal working configuration. See the manual's section about the code generator for more details -->
+				<configuration>
+					<jdbc>
+						<url>jdbc:postgresql://localhost:5433/jurnal</url>
+						<user>postgres</user>
+						<password>postgres</password>
+					</jdbc>
+					<generator>
+						<database>
+							<includes>.*</includes>
+							<inputSchema>public</inputSchema>
+						</database>
+						<target>
+							<packageName>com.bustanil.jurnal.jooq</packageName>
+							<directory>target/generated-sources/jooq-h2</directory>
+						</target>
+					</generator>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
