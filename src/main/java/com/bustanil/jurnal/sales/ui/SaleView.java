@@ -1,7 +1,7 @@
 package com.bustanil.jurnal.sales.ui;
 
 import com.bustanil.jurnal.product.Product;
-import com.bustanil.jurnal.product.ProductService;
+import com.bustanil.jurnal.product.ProductRepository;
 import com.bustanil.jurnal.sales.domain.Sale;
 import com.bustanil.jurnal.sales.domain.SaleItem;
 import com.vaadin.data.Binder;
@@ -29,7 +29,7 @@ public class SaleView extends VerticalLayout implements View {
     private Editor<SaleItem> gridEditor;
 
     @Autowired
-    ProductService productService;
+    ProductRepository productRepository;
     private Binder<Sale> saleBinder;
 
     public SaleView(){
@@ -39,7 +39,7 @@ public class SaleView extends VerticalLayout implements View {
             if ((int) charCode == ShortcutAction.KeyCode.ENTER) {
                 quickAddProduct.setComponentError(null);
                                 String productCode = quickAddProduct.getValue();
-                Optional<Product> maybeProduct = productService.findByCode(productCode);
+                Optional<Product> maybeProduct = productRepository.findByCode(productCode);
                 if (maybeProduct.isPresent()) {
                     SaleItem saleItem = new SaleItem();
                     Product product = maybeProduct.get();
@@ -103,7 +103,7 @@ public class SaleView extends VerticalLayout implements View {
 
         gridEditor.addSaveListener(event -> {
             SaleItem saleItem = event.getBean();
-            Optional<Product> maybeProduct = productService.findByCode(saleItem.getProductCode());
+            Optional<Product> maybeProduct = productRepository.findByCode(saleItem.getProductCode());
             if (maybeProduct.isPresent()) {
                 Product product = maybeProduct.get();
                 saleItem.setProductName(product.getName());
@@ -169,7 +169,14 @@ public class SaleView extends VerticalLayout implements View {
         TextField paymentTextField = new TextField();
         paymentField.addComponent(paymentTextField);
         paymentPart.addComponent(paymentField);
-        paymentPart.addComponent(new Button("Complete Transaction"));
+        Button completeButton = new Button("Complete Transaction");
+        completeButton.addClickListener(event -> {
+            Window paymentDialog = new Window("Complete Transaction", new Label("Test"));
+            paymentDialog.setModal(true);
+            UI.getCurrent().addWindow(paymentDialog);
+        });
+
+        paymentPart.addComponent(completeButton);
         bottomPart.addComponent(paymentPart);
         bottomPart.setComponentAlignment(paymentPart, Alignment.MIDDLE_RIGHT);
         bottomPart.setSizeFull();

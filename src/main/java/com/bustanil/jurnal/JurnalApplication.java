@@ -1,5 +1,6 @@
 package com.bustanil.jurnal;
 
+import org.jooq.SQLDialect;
 import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.DefaultDSLContext;
@@ -15,24 +16,25 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 public class JurnalApplication {
 
-	@Bean
-	DataSourceConnectionProvider connectionProvider(DataSource dataSource) {
-		return new DataSourceConnectionProvider(new TransactionAwareDataSourceProxy(dataSource));
-	}
-
-	@Bean
-	public DefaultDSLContext dsl(DataSource dataSource) {
-		return new DefaultDSLContext(configuration(dataSource));
-	}
-
-	@Bean
-	public DefaultConfiguration configuration(DataSource dataSource) {
-		DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
-		jooqConfiguration.set(connectionProvider(dataSource));
-//		jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTranslator));
-
-		return jooqConfiguration;
-	}
+//	@Bean
+//	DataSourceConnectionProvider connectionProvider(DataSource dataSource) {
+//		return new DataSourceConnectionProvider(new TransactionAwareDataSourceProxy(dataSource));
+//	}
+//
+//	@Bean
+//	public DefaultDSLContext dsl(DataSource dataSource) {
+//		return new DefaultDSLContext(configuration(dataSource));
+//	}
+//
+//	@Bean
+//	public DefaultConfiguration configuration(DataSource dataSource) {
+//		DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
+//		jooqConfiguration.set(connectionProvider(dataSource));
+//		jooqConfiguration.setSQLDialect(SQLDialect.POSTGRES);
+////		jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTranslator));
+//
+//		return jooqConfiguration;
+//	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(JurnalApplication.class, args);
