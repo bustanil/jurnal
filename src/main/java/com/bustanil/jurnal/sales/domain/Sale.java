@@ -10,15 +10,18 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.UUID;
 
-@NoArgsConstructor(force = true)
-@RequiredArgsConstructor(staticName = "create")
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Sale extends AuditedEntity {
 
-    private final String id;
+    private String id;
     private Collection<SaleItem> items = new HashSet<>();
+
+    public Sale(){
+        this.id = autogenerateId();
+    }
 
     public BigDecimal getTotal() {
         return items.stream()
@@ -38,7 +41,12 @@ public class Sale extends AuditedEntity {
 
     }
 
+    private String autogenerateId(){
+        return UUID.randomUUID().toString();
+    }
+
     public void reset() {
+        this.id = autogenerateId();
         getItems().clear();
     }
 

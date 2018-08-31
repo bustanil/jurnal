@@ -2,6 +2,7 @@ package com.bustanil.jurnal.sales.ui;
 
 import com.bustanil.jurnal.product.Product;
 import com.bustanil.jurnal.product.ProductRepository;
+import com.bustanil.jurnal.sales.SaleService;
 import com.bustanil.jurnal.sales.domain.Sale;
 import com.bustanil.jurnal.sales.domain.SaleItem;
 import com.vaadin.data.Binder;
@@ -30,11 +31,15 @@ public class SaleView extends VerticalLayout implements View {
 
     @Autowired
     ProductRepository productRepository;
+    @Autowired
+    SaleService saleService;
+
     private Binder<Sale> saleBinder;
+    private final JnTextField quickAddProduct;
 
     public SaleView(){
         sale = new Sale();
-        JnTextField quickAddProduct = new JnTextField();
+        quickAddProduct = new JnTextField();
         quickAddProduct.addKeyPressedListener(charCode -> {
             if ((int) charCode == ShortcutAction.KeyCode.ENTER) {
                 quickAddProduct.setComponentError(null);
@@ -65,6 +70,7 @@ public class SaleView extends VerticalLayout implements View {
         sale.reset();
         saleItemGrid.getDataProvider().refreshAll();
         saleBinder.readBean(sale);
+        quickAddProduct.focus();
     }
 
     private void createSaleItemGrid() {
@@ -150,7 +156,31 @@ public class SaleView extends VerticalLayout implements View {
         HorizontalLayout bottomPart = new HorizontalLayout();
         Button newSaleButton = new Button("New Sale");
         bottomPart.addComponent(newSaleButton);
-        newSaleButton.addClickListener(clickEvent -> newSale());
+        newSaleButton.addClickListener(clickEvent -> {
+            VerticalLayout newSaleDialog = new VerticalLayout();
+            newSaleDialog.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+            HorizontalLayout buttonBar = new HorizontalLayout();
+            Button okButton = new Button("Yes");
+            buttonBar.addComponent(okButton);
+            Button cancelButton = new Button("No");
+            buttonBar.addComponent(cancelButton);
+            newSaleDialog.addComponent(new Label("Are you sure?"));
+            newSaleDialog.addComponent(buttonBar);
+
+            Window paymentDialog = new Window("New Sale", newSaleDialog);
+            paymentDialog.setWidth(350, Unit.PIXELS);
+            paymentDialog.setHeight(150, Unit.PIXELS);
+            paymentDialog.setModal(true);
+            UI.getCurrent().addWindow(paymentDialog);
+            okButton.addClickListener(event -> {
+                paymentDialog.close();
+                newSale();
+            });
+            cancelButton.addClickListener(event -> {
+                paymentDialog.close();
+            });
+
+        });
 
 
         VerticalLayout paymentPart = new VerticalLayout();
@@ -164,16 +194,49 @@ public class SaleView extends VerticalLayout implements View {
         saleBinder.readBean(sale);
 
         paymentPart.addComponent(totalField);
-        HorizontalLayout paymentField = new HorizontalLayout();
-        paymentField.addComponent(new Label("Payment"));
-        TextField paymentTextField = new TextField();
-        paymentField.addComponent(paymentTextField);
-        paymentPart.addComponent(paymentField);
         Button completeButton = new Button("Complete Transaction");
-        completeButton.addClickListener(event -> {
-            Window paymentDialog = new Window("Complete Transaction", new Label("Test"));
+        completeButton.addClickListener(e -> {
+            VerticalLayout paymentForm = new VerticalLayout();
+            paymentForm.setDefaultComponentAlignment(Alignment.MIDDLE_CENTER);
+            TextField total = new TextField("Total");
+            saleBinder.forField(total).withConverter(new StringToBigDecimalConverter(null)).bind("total");
+            saleBinder.readBean(sale);
+            total.setReadOnly(true);
+            paymentForm.addComponent(total);
+            TextField paymentTextField = new TextField("Payment", "0");
+            TextField changeTextField = new TextField("Change", "0");
+            changeTextField.setReadOnly(true);
+            paymentForm.addComponent(paymentTextField);
+            paymentTextField.addValueChangeListener(event -> {
+                BigDecimal payment = new BigDecimal(event.getValue());
+                BigDecimal change = payment.subtract(sale.getTotal());
+                changeTextField.setValue(change.toString());
+            });
+
+            paymentForm.addComponent(changeTextField);
+            HorizontalLayout buttonBar = new HorizontalLayout();
+            Button okButton = new Button("OK");
+            buttonBar.addComponent(okButton);
+
+            Button cancelButton = new Button("Cancel");
+
+            buttonBar.addComponent(cancelButton);
+            paymentForm.addComponent(buttonBar);
+            paymentForm.setComponentAlignment(buttonBar, Alignment.BOTTOM_CENTER);
+            Window paymentDialog = new Window("Complete Transaction", paymentForm);
+            paymentDialog.setWidth(350, Unit.PIXELS);
+            paymentDialog.setHeight(350, Unit.PIXELS);
             paymentDialog.setModal(true);
             UI.getCurrent().addWindow(paymentDialog);
+
+            okButton.addClickListener(click -> {
+                saleService.makeSale(sale);
+                newSale();
+                paymentDialog.close();
+            });
+            cancelButton.addClickListener(click -> {
+                paymentDialog.close();
+            });
         });
 
         paymentPart.addComponent(completeButton);
